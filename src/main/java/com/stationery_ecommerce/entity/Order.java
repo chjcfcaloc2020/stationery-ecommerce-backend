@@ -1,4 +1,4 @@
-package com.stationery_ecommerce.entities;
+package com.stationery_ecommerce.entity;
 
 import com.stationery_ecommerce.common.OrderStatus;
 import jakarta.persistence.*;
