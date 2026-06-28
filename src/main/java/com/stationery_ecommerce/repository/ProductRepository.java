@@ -15,8 +15,8 @@ import java.util.Optional;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-    Page<Product> findByCategoryIdAndIsAvaiableTrue(Long categoryId, Pageable pageable);
-    Page<Product> findByNameContainingIgnoreCaseAndIsAvaiableTrue(String name, Pageable pageable);
+    Page<Product> findByCategoryIdAndIsAvailableTrue(Long categoryId, Pageable pageable);
+    Page<Product> findByNameContainingIgnoreCaseAndIsAvailableTrue(String name, Pageable pageable);
     boolean existsBySku(String sku);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)

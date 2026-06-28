@@ -29,13 +29,13 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public Page<ProductResponse> getProductsByCategory(Long categoryId, Pageable pageable) {
-        return productRepository.findByCategoryIdAndIsAvaiableTrue(categoryId, pageable)
+        return productRepository.findByCategoryIdAndIsAvailableTrue(categoryId, pageable)
                 .map(this::mapToResponse);
     }
 
     @Transactional(readOnly = true)
     public Page<ProductResponse> searchProducts(String keyword, Pageable pageable) {
-        return productRepository.findByNameContainingIgnoreCaseAndIsAvaiableTrue(keyword, pageable)
+        return productRepository.findByNameContainingIgnoreCaseAndIsAvailableTrue(keyword, pageable)
                 .map(this::mapToResponse);
     }
 
