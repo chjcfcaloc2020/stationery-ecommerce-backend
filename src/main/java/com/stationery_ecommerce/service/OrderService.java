@@ -9,7 +9,7 @@ import com.stationery_ecommerce.entity.Order;
 import com.stationery_ecommerce.entity.OrderItem;
 import com.stationery_ecommerce.entity.Product;
 import com.stationery_ecommerce.entity.User;
-import com.stationery_ecommerce.exception.payload.ResourceAlreadyExistsException;
+import com.stationery_ecommerce.exception.payload.InsufficientStockException;
 import com.stationery_ecommerce.exception.payload.ResourceNotFoundException;
 import com.stationery_ecommerce.repository.OrderRepository;
 import com.stationery_ecommerce.repository.ProductRepository;
@@ -58,7 +58,7 @@ public class OrderService {
                     .orElseThrow(() -> new ResourceNotFoundException("Product with ID " + itemRequest.getProductId() + " does not exist or is no longer available for sale"));
 
             if (product.getStockQuantity() < itemRequest.getQuantity()) {
-                throw new ResourceAlreadyExistsException("Product '" + product.getName() + "' is out of stock or there is insufficient quantity (Currently available: " + product.getStockQuantity() + ")");
+                throw new InsufficientStockException("Product '" + product.getName() + "' is out of stock or there is insufficient quantity (Currently available: " + product.getStockQuantity() + ")");
             }
 
             // Thực hiện TRỪ KHO ĐỒNG THỜI AN TOÀN
