@@ -1,6 +1,7 @@
 package com.stationery_ecommerce.entity;
 
 import com.stationery_ecommerce.common.OrderStatus;
+import com.stationery_ecommerce.common.PaymentMethod;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -23,6 +24,9 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "order_number", nullable = false)
+    private String orderNumber;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -36,6 +40,10 @@ public class Order {
 
     @Column(name = "shipping_address", nullable = false, length = 500)
     private String shippingAddress;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method", nullable = false)
+    private PaymentMethod paymentMethod;
 
     @Column(name = "created_at", updatable = false)
     @CreationTimestamp
