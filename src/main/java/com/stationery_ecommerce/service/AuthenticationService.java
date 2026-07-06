@@ -3,6 +3,7 @@ package com.stationery_ecommerce.service;
 import com.stationery_ecommerce.dto.request.AuthenticationRequest;
 import com.stationery_ecommerce.dto.request.RegisterRequest;
 import com.stationery_ecommerce.dto.response.AuthenticationResponse;
+import com.stationery_ecommerce.entity.RefreshToken;
 import com.stationery_ecommerce.entity.User;
 import com.stationery_ecommerce.exception.payload.ResourceAlreadyExistsException;
 import com.stationery_ecommerce.exception.payload.ResourceNotFoundException;
@@ -12,11 +13,13 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +29,7 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final RefreshTokenService refreshTokenService;
 
     @Transactional
     public AuthenticationResponse register(RegisterRequest request) {
@@ -50,8 +54,12 @@ public class AuthenticationService {
         );
         var jwtToken = jwtService.generateToken(springUser);
 
+        // create refresh token
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(savedUser.getId());
+
         return AuthenticationResponse.builder()
                 .token(jwtToken)
+                .refreshToken(refreshToken.getToken())
                 .email(savedUser.getEmail())
                 .fullName(savedUser.getFullName())
                 .role(savedUser.getRole())
@@ -80,11 +88,23 @@ public class AuthenticationService {
         );
         var jwtToken = jwtService.generateToken(springUser);
 
+        // create refresh token
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
+
         return AuthenticationResponse.builder()
                 .token(jwtToken)
+                .refreshToken(refreshToken.getToken())
                 .email(user.getEmail())
                 .fullName(user.getFullName())
                 .role(user.getRole())
                 .build();
+    }
+
+    public void logout() {
+        String email = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        refreshTokenService.deleteByUserId(user.getId());
     }
 }

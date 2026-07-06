@@ -4,6 +4,7 @@ import com.stationery_ecommerce.dto.response.ErrorResponse;
 import com.stationery_ecommerce.exception.payload.InsufficientStockException;
 import com.stationery_ecommerce.exception.payload.ResourceAlreadyExistsException;
 import com.stationery_ecommerce.exception.payload.ResourceNotFoundException;
+import com.stationery_ecommerce.exception.payload.TokenRefreshException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -86,6 +87,19 @@ public class GlobalExceptionHandler {
                 .message("You do not have access to this administrative function!")
                 .timestamp(LocalDateTime.now())
                 .build();
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+    }
+
+    @ExceptionHandler(TokenRefreshException.class)
+    public ResponseEntity<ErrorResponse> handleRefreshTokenException(TokenRefreshException e) {
+        ErrorResponse error = ErrorResponse.builder()
+                .status(HttpStatus.FORBIDDEN.value())
+                .error("FORBIDDEN")
+                .message("Your token is invalid")
+                .timestamp(LocalDateTime.now())
+                .build();
+
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
@@ -121,6 +135,7 @@ public class GlobalExceptionHandler {
                 .message("The system encountered an unexpected internal error. Please try again later!")
                 .timestamp(LocalDateTime.now())
                 .build();
+
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
 }

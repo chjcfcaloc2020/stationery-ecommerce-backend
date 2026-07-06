@@ -8,3 +8,4 @@ server:
 jwt:
   secret: ${SECRET_KEY}
   expiration: ${EXPIRATION_TIME}
+  refresh-token-duration: ${REFRESH_TOKEN_DURATION}

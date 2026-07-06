@@ -3,16 +3,12 @@ package com.stationery_ecommerce.dto.response;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
-public class AuthenticationResponse {
-    private String token;
+public class TokenRefreshResponse {
+    private String accessToken;
     private String refreshToken;
-    private String email;
-    private String fullName;
-    private String role;
+    private final String tokenType = "Bearer";
 }
