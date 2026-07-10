@@ -1,10 +1,7 @@
 package com.stationery_ecommerce.exception;
 
 import com.stationery_ecommerce.dto.response.ErrorResponse;
-import com.stationery_ecommerce.exception.payload.InsufficientStockException;
-import com.stationery_ecommerce.exception.payload.ResourceAlreadyExistsException;
-import com.stationery_ecommerce.exception.payload.ResourceNotFoundException;
-import com.stationery_ecommerce.exception.payload.TokenRefreshException;
+import com.stationery_ecommerce.exception.payload.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -137,5 +134,17 @@ public class GlobalExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    }
+
+    @ExceptionHandler(VoucherException.class)
+    public ResponseEntity<ErrorResponse> handleVoucherException(VoucherException e) {
+        ErrorResponse error = ErrorResponse.builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error("BAD_REQUEST")
+                .message("You can not use this voucher")
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 }

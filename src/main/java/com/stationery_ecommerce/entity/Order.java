@@ -48,6 +48,10 @@ public class Order {
     @Column(name = "payment_method", nullable = false)
     private PaymentMethod paymentMethod;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "voucher_id")
+    private Voucher voucher;
+
     @Column(name = "created_at", updatable = false)
     @CreationTimestamp
     private LocalDateTime createdAt;

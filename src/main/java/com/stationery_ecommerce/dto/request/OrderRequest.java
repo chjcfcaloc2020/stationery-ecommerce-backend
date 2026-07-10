@@ -8,4 +8,5 @@ public class OrderRequest {
     private String phoneNumber;
     private String shippingAddress;
     private String paymentMethod = "COD";
+    private String voucherCode;
 }

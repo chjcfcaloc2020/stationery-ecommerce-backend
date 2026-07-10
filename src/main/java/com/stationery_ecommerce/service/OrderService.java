@@ -1,5 +1,6 @@
 package com.stationery_ecommerce.service;
 
+import com.stationery_ecommerce.common.DiscountType;
 import com.stationery_ecommerce.common.OrderStatus;
 import com.stationery_ecommerce.common.PaymentMethod;
 import com.stationery_ecommerce.dto.request.OrderItemRequest;
@@ -8,10 +9,8 @@ import com.stationery_ecommerce.dto.response.OrderResponse;
 import com.stationery_ecommerce.entity.*;
 import com.stationery_ecommerce.exception.payload.InsufficientStockException;
 import com.stationery_ecommerce.exception.payload.ResourceNotFoundException;
-import com.stationery_ecommerce.repository.CartItemRepository;
-import com.stationery_ecommerce.repository.OrderRepository;
-import com.stationery_ecommerce.repository.ProductRepository;
-import com.stationery_ecommerce.repository.UserRepository;
+import com.stationery_ecommerce.exception.payload.VoucherException;
+import com.stationery_ecommerce.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -32,6 +31,7 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final CartItemRepository cartItemRepository;
+    private final VoucherRepository voucherRepository;
 
     @Transactional
     public OrderResponse createOrder(OrderRequest request) {
@@ -107,7 +107,57 @@ public class OrderService {
                     .build());
         }
 
-        order.setTotalPrice(totalAmount);
+        // voucher logic
+        BigDecimal discountAmount = BigDecimal.ZERO;
+        Voucher appliedVoucher = null;
+
+        if (request.getVoucherCode() != null && !request.getVoucherCode().trim().isEmpty()) {
+            appliedVoucher = voucherRepository.findByCodeForUpdate(request.getVoucherCode())
+                    .orElseThrow(() -> new VoucherException("Voucher is not exists"));
+
+            // validation
+            if (!appliedVoucher.isActive()) {
+                throw new VoucherException("Voucher was blocked");
+            }
+
+            LocalDateTime now = LocalDateTime.now();
+            if (now.isBefore(appliedVoucher.getStartDate()) || now.isAfter(appliedVoucher.getEndDate())) {
+                throw new VoucherException("The voucher has expired or is not yet valid");
+            }
+            if (appliedVoucher.getUsageLimit() != null && appliedVoucher.getUsedCount() >= appliedVoucher.getUsageLimit()) {
+                throw new VoucherException("Unfortunately, this voucher has run out of uses");
+            }
+            if (totalAmount.compareTo(appliedVoucher.getMinOrderValue()) < 0) {
+                throw new VoucherException("The order must reach a minimum of " + appliedVoucher.getMinOrderValue() + "VND to apply this voucher");
+            }
+
+            // calculate reduce amount
+            if (appliedVoucher.getDiscountType() == DiscountType.FIXED) {
+                discountAmount = appliedVoucher.getDiscountValue();
+            } else if (appliedVoucher.getDiscountType() == DiscountType.PERCENTAGE) {
+                // Formula: total * (percent / 100)
+                BigDecimal calculatedDiscount = totalAmount.multiply(appliedVoucher.getDiscountValue().divide(BigDecimal.valueOf(100)));
+
+                if (appliedVoucher.getMaxDiscountAmount() != null && calculatedDiscount.compareTo(appliedVoucher.getMaxDiscountAmount()) > 0) {
+                    discountAmount = appliedVoucher.getMaxDiscountAmount();
+                } else {
+                    discountAmount = calculatedDiscount;
+                }
+            }
+
+            // save db
+            appliedVoucher.setUsedCount(appliedVoucher.getUsedCount() + 1);
+            voucherRepository.save(appliedVoucher);
+        }
+
+        // final calculate voucher
+        BigDecimal finalAmount = totalAmount.subtract(discountAmount);
+        if (finalAmount.compareTo(BigDecimal.ZERO) < 0) {
+            finalAmount = BigDecimal.ZERO;
+        }
+
+        order.setTotalPrice(finalAmount);
+        order.setVoucher(appliedVoucher);
         order.setOrderItems(orderItems);
         Order savedOrder = orderRepository.save(order);
 
