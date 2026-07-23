@@ -3,7 +3,6 @@ package com.stationery_ecommerce.service;
 import com.stationery_ecommerce.common.DiscountType;
 import com.stationery_ecommerce.common.OrderStatus;
 import com.stationery_ecommerce.common.PaymentMethod;
-import com.stationery_ecommerce.dto.request.OrderItemRequest;
 import com.stationery_ecommerce.dto.request.OrderRequest;
 import com.stationery_ecommerce.dto.response.OrderResponse;
 import com.stationery_ecommerce.entity.*;
@@ -32,6 +31,7 @@ public class OrderService {
     private final UserRepository userRepository;
     private final CartItemRepository cartItemRepository;
     private final VoucherRepository voucherRepository;
+    private final EmailService emailService;
 
     @Transactional
     public OrderResponse createOrder(OrderRequest request) {
@@ -163,7 +163,7 @@ public class OrderService {
 
         cartItemRepository.deleteByUser(user);
 
-        return OrderResponse.builder()
+        OrderResponse response = OrderResponse.builder()
                 .orderId(savedOrder.getId())
                 .orderNumber(savedOrder.getOrderNumber())
                 .totalAmount(savedOrder.getTotalPrice())
@@ -171,5 +171,9 @@ public class OrderService {
                 .createdAt(savedOrder.getCreatedAt())
                 .items(responseItemDtos)
                 .build();
+
+        emailService.sendOrderConfirmationEmail(user.getEmail(), response);
+
+        return response;
     }
 }

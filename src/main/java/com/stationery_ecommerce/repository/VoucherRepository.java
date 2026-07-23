@@ -16,4 +16,6 @@ public interface VoucherRepository extends JpaRepository<Voucher, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT v FROM Voucher v WHERE v.code = :code")
     Optional<Voucher> findByCodeForUpdate(@Param("code") String code);
+
+    boolean existsByCode(String code);
 }
