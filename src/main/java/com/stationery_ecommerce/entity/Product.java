@@ -37,6 +37,9 @@ public class Product {
     @Column(name = "stock_quantity", nullable = false)
     private Integer stockQuantity;
 
+    @Column(name = "image_url", length = 512)
+    private String imageUrl;
+
     @Column(unique = true, nullable = false, length = 50)
     private String sku;
 

@@ -56,6 +56,10 @@ public class UserService {
         user.setPhone(request.getPhone());
         user.setLocation(request.getLocation());
 
+        if (request.getAvtUrl() != null) {
+            user.setAvtUrl(request.getAvtUrl());
+        }
+
         // Chỉ Admin mới được quyền thay đổi Role và trạng thái Khóa/Mở tài khoản
         if (isAdmin) {
             if (request.getRole() != null) user.setRole(request.getRole());
@@ -78,6 +82,7 @@ public class UserService {
                 .id(u.getId())
                 .email(u.getEmail())
                 .fullName(u.getFullName())
+                .avtUrl(u.getAvtUrl())
                 .phone(u.getPhone())
                 .location(u.getLocation())
                 .role(u.getRole())

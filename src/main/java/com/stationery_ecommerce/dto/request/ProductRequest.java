@@ -24,6 +24,8 @@ public class ProductRequest {
     @Min(value = 0, message = "Số lượng kho không được âm")
     private Integer stockQuantity;
 
+    private String imageUrl;
+
     @NotBlank(message = "SKU code is not blank")
     private String sku;
 

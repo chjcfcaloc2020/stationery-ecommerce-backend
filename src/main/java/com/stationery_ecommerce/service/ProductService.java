@@ -112,6 +112,7 @@ public class ProductService {
                 .description(product.getDescription())
                 .price(product.getPrice())
                 .stockQuantity(product.getStockQuantity())
+                .imageUrl(product.getImageUrl())
                 .sku(product.getSku())
                 .isAvailable(product.isAvailable())
                 .categoryName(product.getCategory().getName())

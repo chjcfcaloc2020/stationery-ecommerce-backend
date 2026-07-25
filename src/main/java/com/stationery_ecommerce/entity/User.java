@@ -29,7 +29,7 @@ public class User {
     @Column(name = "full_name", length = 100)
     private String fullName;
 
-    @Column(name = "avt_url")
+    @Column(name = "avt_url", length = 512)
     private String avtUrl;
 
     @Column(length = 20)

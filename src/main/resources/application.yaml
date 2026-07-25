@@ -15,6 +15,11 @@ spring:
             enable: true
             required: true
 
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
 server:
   port: 8080
 
@@ -22,3 +27,8 @@ jwt:
   secret: ${SECRET_KEY}
   expiration: ${EXPIRATION_TIME}
   refresh-token-duration: ${REFRESH_TOKEN_DURATION}
+
+cloudinary:
+  cloud-name: ${CLOUD_NAME}
+  api-key: ${API_KEY_CLOUDINARY}
+  api-secret: ${API_SECRET_CLOUDINARY}
