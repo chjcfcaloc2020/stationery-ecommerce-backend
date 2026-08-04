@@ -27,6 +27,15 @@ public class Category {
     @Column(nullable = false, unique = true, length = 100)
     private String slug;
 
+    @Column(nullable = false, unique = true, length = 50)
+    private String icon;
+
+    @Column(nullable = false)
+    private String color;
+
+    @Column(name = "sort_order")
+    private Integer sortOrder;
+
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Product> products;
 }
