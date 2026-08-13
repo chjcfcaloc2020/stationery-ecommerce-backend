@@ -136,12 +136,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
 
-    @ExceptionHandler(VoucherException.class)
-    public ResponseEntity<ErrorResponse> handleVoucherException(VoucherException e) {
+    @ExceptionHandler(CouponException.class)
+    public ResponseEntity<ErrorResponse> handleCouponException(CouponException e) {
         ErrorResponse error = ErrorResponse.builder()
                 .status(HttpStatus.BAD_REQUEST.value())
                 .error("BAD_REQUEST")
-                .message("You can not use this voucher")
+                .message("You can not use this coupon")
                 .timestamp(LocalDateTime.now())
                 .build();
 

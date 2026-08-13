@@ -8,7 +8,7 @@ import com.stationery_ecommerce.dto.response.OrderResponse;
 import com.stationery_ecommerce.entity.*;
 import com.stationery_ecommerce.exception.payload.InsufficientStockException;
 import com.stationery_ecommerce.exception.payload.ResourceNotFoundException;
-import com.stationery_ecommerce.exception.payload.VoucherException;
+import com.stationery_ecommerce.exception.payload.CouponException;
 import com.stationery_ecommerce.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,7 +30,7 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final CartItemRepository cartItemRepository;
-    private final VoucherRepository voucherRepository;
+    private final CouponRepository couponRepository;
     private final EmailService emailService;
 
     @Transactional
@@ -47,16 +47,24 @@ public class OrderService {
         }
 
         // handle delivery information
+        String finalName = (request.getShippingName() != null && !request.getShippingName().trim().isEmpty())
+                ? request.getShippingName()
+                : user.getFullName();
+
         String finalAddress = (request.getShippingAddress() != null && !request.getShippingAddress().trim().isEmpty())
                 ? request.getShippingAddress()
                 : user.getLocation();
 
-        String finalPhone = (request.getPhoneNumber() != null && !request.getPhoneNumber().trim().isEmpty())
-                ? request.getPhoneNumber()
+        String finalCity = (request.getShippingCity() != null && !request.getShippingCity().trim().isEmpty())
+                ? request.getShippingCity()
+                : user.getLocation();
+
+        String finalPhone = (request.getShippingPhone() != null && !request.getShippingPhone().trim().isEmpty())
+                ? request.getShippingPhone()
                 : user.getPhone();
 
-        if (finalAddress == null || finalPhone == null) {
-            throw new ResourceNotFoundException("Please provide your shipping address and phone number");
+        if (finalAddress == null || finalPhone == null || finalName == null || finalCity == null) {
+            throw new ResourceNotFoundException("Please provide your shipping information");
         }
 
         // Khởi tạo các biến tính toán hóa đơn
@@ -68,9 +76,14 @@ public class OrderService {
                 .user(user)
                 .orderNumber("ORD-" + UUID.randomUUID().toString().substring(0,8).toUpperCase())
                 .status(OrderStatus.valueOf("PENDING"))
+                .shippingFee(request.getShippingFee())
+                .shippingName(finalName)
                 .shippingAddress(finalAddress)
-                .phoneNumber(finalPhone)
+                .shippingPhone(finalPhone)
+                .shippingCity(finalCity)
+                .shippingMethod(request.getShippingMethod())
                 .paymentMethod(PaymentMethod.valueOf(request.getPaymentMethod()))
+                .note(request.getNote())
                 .createdAt(LocalDateTime.now())
                 .build();
 
@@ -107,47 +120,41 @@ public class OrderService {
                     .build());
         }
 
-        // voucher logic
+        // coupon logic
         BigDecimal discountAmount = BigDecimal.ZERO;
-        Voucher appliedVoucher = null;
+        Coupon appliedCoupon = null;
 
-        if (request.getVoucherCode() != null && !request.getVoucherCode().trim().isEmpty()) {
-            appliedVoucher = voucherRepository.findByCodeForUpdate(request.getVoucherCode())
-                    .orElseThrow(() -> new VoucherException("Voucher is not exists"));
+        if (request.getCouponCode() != null && !request.getCouponCode().trim().isEmpty()) {
+            appliedCoupon = couponRepository.findByCodeForUpdate(request.getCouponCode())
+                    .orElseThrow(() -> new CouponException("Coupon is not exists"));
 
             // validation
-            if (!appliedVoucher.isActive()) {
-                throw new VoucherException("Voucher was blocked");
+            if (!appliedCoupon.isActive()) {
+                throw new CouponException("Coupon was blocked");
             }
 
             LocalDateTime now = LocalDateTime.now();
-            if (now.isBefore(appliedVoucher.getStartDate()) || now.isAfter(appliedVoucher.getEndDate())) {
-                throw new VoucherException("The voucher has expired or is not yet valid");
+            if (now.isBefore(appliedCoupon.getStartDate()) || now.isAfter(appliedCoupon.getEndDate())) {
+                throw new CouponException("The voucher has expired or is not yet valid");
             }
-            if (appliedVoucher.getUsageLimit() != null && appliedVoucher.getUsedCount() >= appliedVoucher.getUsageLimit()) {
-                throw new VoucherException("Unfortunately, this voucher has run out of uses");
+            if (appliedCoupon.getMaxUses() != null && appliedCoupon.getUsedCount() >= appliedCoupon.getMaxUses()) {
+                throw new CouponException("Unfortunately, this voucher has run out of uses");
             }
-            if (totalAmount.compareTo(appliedVoucher.getMinOrderValue()) < 0) {
-                throw new VoucherException("The order must reach a minimum of " + appliedVoucher.getMinOrderValue() + "VND to apply this voucher");
+            if (totalAmount.compareTo(appliedCoupon.getMinOrder()) < 0) {
+                throw new CouponException("The order must reach a minimum of " + appliedCoupon.getMinOrder() + "VND to apply this coupon");
             }
 
             // calculate reduce amount
-            if (appliedVoucher.getDiscountType() == DiscountType.FIXED) {
-                discountAmount = appliedVoucher.getDiscountValue();
-            } else if (appliedVoucher.getDiscountType() == DiscountType.PERCENTAGE) {
+            if (appliedCoupon.getDiscountType() == DiscountType.FIXED) {
+                discountAmount = appliedCoupon.getDiscountValue();
+            } else if (appliedCoupon.getDiscountType() == DiscountType.PERCENTAGE) {
                 // Formula: total * (percent / 100)
-                BigDecimal calculatedDiscount = totalAmount.multiply(appliedVoucher.getDiscountValue().divide(BigDecimal.valueOf(100)));
-
-                if (appliedVoucher.getMaxDiscountAmount() != null && calculatedDiscount.compareTo(appliedVoucher.getMaxDiscountAmount()) > 0) {
-                    discountAmount = appliedVoucher.getMaxDiscountAmount();
-                } else {
-                    discountAmount = calculatedDiscount;
-                }
+                discountAmount = totalAmount.multiply(appliedCoupon.getDiscountValue().divide(BigDecimal.valueOf(100)));
             }
 
             // save db
-            appliedVoucher.setUsedCount(appliedVoucher.getUsedCount() + 1);
-            voucherRepository.save(appliedVoucher);
+            appliedCoupon.setUsedCount(appliedCoupon.getUsedCount() + 1);
+            couponRepository.save(appliedCoupon);
         }
 
         // final calculate voucher
@@ -157,7 +164,7 @@ public class OrderService {
         }
 
         order.setTotalPrice(finalAmount);
-        order.setVoucher(appliedVoucher);
+        order.setCoupon(appliedCoupon);
         order.setOrderItems(orderItems);
         Order savedOrder = orderRepository.save(order);
 

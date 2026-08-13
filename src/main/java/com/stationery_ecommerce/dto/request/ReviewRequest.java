@@ -14,7 +14,10 @@ public class ReviewRequest {
     @Max(value = 5, message = "Rate score maximum is 5")
     private Integer rating;
 
-    @NotBlank(message = "Comment is not blank")
-    @Size(max = 1000, message = "Comment maximum is 1000 characters")
-    private String comment;
+    private String title;
+    private String authorName;
+
+    @NotBlank(message = "Content is not blank")
+    @Size(max = 1000, message = "Content maximum is 1000 characters")
+    private String content;
 }

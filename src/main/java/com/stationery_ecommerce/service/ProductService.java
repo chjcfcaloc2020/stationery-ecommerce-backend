@@ -8,6 +8,7 @@ import com.stationery_ecommerce.exception.payload.ResourceAlreadyExistsException
 import com.stationery_ecommerce.exception.payload.ResourceNotFoundException;
 import com.stationery_ecommerce.repository.CategoryRepository;
 import com.stationery_ecommerce.repository.ProductRepository;
+import com.stationery_ecommerce.util.HelperMethod;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -49,20 +50,28 @@ public class ProductService {
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public ProductResponse createProduct(ProductRequest request) {
-        if (productRepository.existsBySku(request.getSku())) {
-            throw new ResourceAlreadyExistsException("The product SKU already exists in stock");
-        }
-
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
+        String slug = HelperMethod.generateSlug(request.getName());
+        if (productRepository.existsBySlug(slug)) {
+            slug += "-" + System.currentTimeMillis() % 1000;
+        }
+
         Product product = Product.builder()
                 .name(request.getName())
+                .slug(slug)
                 .description(request.getDescription())
                 .price(request.getPrice())
+                .originalPrice(request.getOriginalPrice())
                 .stockQuantity(request.getStockQuantity())
-                .sku(request.getSku())
+                .tags(request.getTags())
                 .isAvailable(true)
+                .isNew(true)
+                .isBestSeller(false)
+                .isFeatured(false)
+                .isOnSale(false)
+                .brand(request.getBrand())
                 .category(category)
                 .build();
 
@@ -78,16 +87,18 @@ public class ProductService {
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
-        // Nếu thay đổi SKU, cần check trùng với các sản phẩm khác
-        if (!product.getSku().equals(request.getSku()) && productRepository.existsBySku(request.getSku())) {
-            throw new ResourceAlreadyExistsException("New Code SKU is exists");
-        }
-
         product.setName(request.getName());
+        product.setSlug(HelperMethod.generateSlug(request.getName()));
         product.setDescription(request.getDescription());
         product.setPrice(request.getPrice());
+        product.setOriginalPrice(request.getOriginalPrice());
         product.setStockQuantity(request.getStockQuantity());
-        product.setSku(request.getSku());
+        product.setTags(request.getTags());
+        product.setBrand(request.getBrand());
+        product.setNew(request.isNew());
+        product.setBestSeller(request.isBestSeller());
+        product.setFeatured(request.isFeatured());
+        product.setOnSale(request.isOnSale());
         product.setCategory(category);
 
         return mapToResponse(productRepository.save(product));
@@ -109,13 +120,23 @@ public class ProductService {
         return ProductResponse.builder()
                 .id(product.getId())
                 .name(product.getName())
+                .categoryName(product.getCategory().getName())
+                .slug(product.getSlug())
                 .description(product.getDescription())
                 .price(product.getPrice())
+                .originalPrice(product.getOriginalPrice())
                 .stockQuantity(product.getStockQuantity())
+                .rating(product.getRating())
                 .imageUrl(product.getImageUrl())
-                .sku(product.getSku())
+                .images(product.getImages())
+                .tags(product.getTags())
                 .isAvailable(product.isAvailable())
-                .categoryName(product.getCategory().getName())
+                .isNew(product.isNew())
+                .isBestSeller(product.isBestSeller())
+                .isFeatured(product.isFeatured())
+                .isOnSale(product.isOnSale())
+                .colors(product.getColors())
+                .brand(product.getBrand())
                 .build();
     }
 }

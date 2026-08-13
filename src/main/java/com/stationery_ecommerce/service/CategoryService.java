@@ -11,11 +11,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.text.Normalizer;
 import java.util.List;
-import java.util.Locale;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import com.stationery_ecommerce.util.HelperMethod;
 
 @Service
 @RequiredArgsConstructor
@@ -44,7 +43,7 @@ public class CategoryService {
             throw new ResourceAlreadyExistsException("Category already exists");
         }
 
-        String slug = generateSlug(request.getName());
+        String slug = HelperMethod.generateSlug(request.getName());
         if (categoryRepository.existsBySlug(slug)) {
             slug += "-" + System.currentTimeMillis() % 1000;
         }
@@ -52,6 +51,9 @@ public class CategoryService {
         Category category = Category.builder()
                 .name(request.getName())
                 .slug(slug)
+                .icon(request.getIcon())
+                .color(request.getColor())
+                .sortOrder(request.getSortOrder())
                 .build();
 
         return mapToResponse(categoryRepository.save(category));
@@ -64,7 +66,10 @@ public class CategoryService {
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
         category.setName(request.getName());
-        category.setSlug(generateSlug(request.getName()));
+        category.setSlug(HelperMethod.generateSlug(request.getName()));
+        category.setIcon(request.getIcon());
+        category.setColor(request.getColor());
+        category.setSortOrder(request.getSortOrder());
 
         return mapToResponse(categoryRepository.save(category));
     }
@@ -84,18 +89,9 @@ public class CategoryService {
                 .id(category.getId())
                 .name(category.getName())
                 .slug(category.getSlug())
+                .icon(category.getIcon())
+                .color(category.getColor())
+                .sortOrder(category.getSortOrder())
                 .build();
-    }
-
-    private String generateSlug(String input) {
-        if (input == null || input.isEmpty()) return "";
-        String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
-        Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
-
-        String slug = pattern.matcher(normalized).replaceAll("").toLowerCase(Locale.ROOT);
-        return slug.replaceAll("[^a-z0-9\\s-]", "")
-                .replaceAll("\\s+", "-")
-                .replaceAll("-+", "-")
-                .trim();
     }
 }

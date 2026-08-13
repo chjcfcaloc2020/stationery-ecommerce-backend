@@ -11,13 +11,13 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
-public class VoucherRequest {
+public class CouponRequest {
 
     @NotBlank(message = "Voucher code is not blank")
     @Size(min = 3, max = 50, message = "Voucher code must have from 3 to 50 characters")
     private String code;
 
-    @NotNull(message = "Voucher type is not null (FIXED or PERCENTAGE)")
+    @NotNull(message = "Discount type is not null (FIXED or PERCENTAGE)")
     private DiscountType discountType;
 
     @NotNull(message = "Discount value is not null")
@@ -25,8 +25,8 @@ public class VoucherRequest {
     private BigDecimal discountValue;
 
     private BigDecimal maxDiscountAmount;
-    private BigDecimal minOrderValue;
-    private Integer usageLimit;
+    private BigDecimal minOrder;
+    private Integer maxUses;
 
     @NotNull(message = "Start date is not null")
     private LocalDateTime startDate;

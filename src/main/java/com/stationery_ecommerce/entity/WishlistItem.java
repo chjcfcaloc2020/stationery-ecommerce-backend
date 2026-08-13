@@ -1,21 +1,19 @@
 package com.stationery_ecommerce.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "cart_items")
-@Data
-@Builder
+@Table(name = "wishlist_items")
 @NoArgsConstructor
 @AllArgsConstructor
-public class CartItem {
+@Getter
+@Setter
+@Builder
+public class WishlistItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,9 +26,6 @@ public class CartItem {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
-
-    @Column(nullable = false)
-    private Integer quantity;
 
     @Column(name = "created_at", updatable = false)
     @CreationTimestamp

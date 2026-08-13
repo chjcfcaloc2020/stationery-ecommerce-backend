@@ -55,10 +55,18 @@ public class ReviewService {
                 .product(product)
                 .user(user)
                 .rating(request.getRating())
-                .comment(request.getComment().trim())
+                .title(request.getTitle())
+                .content(request.getContent().trim())
+                .authorName(request.getAuthorName())
                 .build();
 
         Review savedReview = reviewRepository.save(review);
+        Double avgRating = reviewRepository.getAverageRatingByProductId(product.getId());
+        double roundedRating = Math.round(avgRating * 10.0) / 10.0;
+
+        product.setRating(roundedRating);
+        productRepository.save(product);
+
         return mapToResponse(savedReview);
     }
 
@@ -91,7 +99,9 @@ public class ReviewService {
                 .userId(r.getUser().getId())
                 .userFullName(r.getUser().getFullName())
                 .rating(r.getRating())
-                .comment(r.getComment())
+                .title(r.getTitle())
+                .content(r.getContent())
+                .authorName(r.getAuthorName())
                 .createdAt(r.getCreatedAt())
                 .build();
     }

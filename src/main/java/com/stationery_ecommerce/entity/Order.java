@@ -38,19 +38,34 @@ public class Order {
     @Column(nullable = false, length = 20)
     private OrderStatus status;
 
+    @Column(name = "shipping_fee", nullable = false, precision = 12, scale = 2)
+    private BigDecimal shippingFee;
+
+    @Column(name = "shipping_name", nullable = false)
+    private String shippingName;
+
+    @Column(name = "shipping_phone", nullable = false)
+    private String shippingPhone;
+
     @Column(name = "shipping_address", nullable = false, length = 500)
     private String shippingAddress;
 
-    @Column(name = "phone_number", nullable = false)
-    private String phoneNumber;
+    @Column(name = "shipping_city", nullable = false)
+    private String shippingCity;
+
+    @Column(name = "shipping_method", nullable = false)
+    private String shippingMethod;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_method", nullable = false)
     private PaymentMethod paymentMethod;
 
+    @Column(columnDefinition = "TEXT")
+    private String note;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "voucher_id")
-    private Voucher voucher;
+    @JoinColumn(name = "coupon_id")
+    private Coupon coupon;
 
     @Column(name = "created_at", updatable = false)
     @CreationTimestamp

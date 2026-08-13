@@ -32,8 +32,14 @@ public class Review {
     @Column(nullable = false)
     private Integer rating;
 
+    @Column(length = 100)
+    private String title;
+
     @Column(columnDefinition = "TEXT")
-    private String comment;
+    private String content;
+
+    @Column(name = "author_name", length = 50)
+    private String authorName;
 
     @Column(name = "created_at", nullable = false)
     @CreationTimestamp

@@ -9,14 +9,14 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
-public class VoucherResponse {
+public class CouponResponse {
     private Long id;
     private String code;
     private DiscountType discountType;
     private BigDecimal discountValue;
-    private BigDecimal maxDiscountAmount;
-    private BigDecimal minOrderValue;
-    private Integer usageLimit;
+//    private BigDecimal maxDiscountAmount;
+    private BigDecimal minOrder;
+    private Integer maxUses;
     private Integer usedCount;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
