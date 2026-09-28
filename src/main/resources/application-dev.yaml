@@ -4,6 +4,15 @@ spring:
     username: root
     password: Chipheo2k3@
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  cache:
+    redis:
+      time-to-live: 3600000
+
   jpa:
     hibernate:
       ddl-auto: update

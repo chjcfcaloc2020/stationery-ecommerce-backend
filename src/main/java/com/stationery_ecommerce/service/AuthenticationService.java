@@ -57,6 +57,10 @@ public class AuthenticationService {
         // create refresh token
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(savedUser.getId());
 
+        // save refreshToken into Redis
+        long refreshTokenDurationMs = 7 * 24 * 60 * 60 * 1000L;
+        refreshTokenService.saveRefreshToken(request.getEmail(), refreshToken.getToken(), refreshTokenDurationMs);
+
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .refreshToken(refreshToken.getToken())
@@ -91,6 +95,10 @@ public class AuthenticationService {
         // create refresh token
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
 
+        // save refreshToken into Redis
+        long refreshTokenDurationMs = 7 * 24 * 60 * 60 * 1000L;
+        refreshTokenService.saveRefreshToken(request.getEmail(), refreshToken.getToken(), refreshTokenDurationMs);
+
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .refreshToken(refreshToken.getToken())
@@ -102,6 +110,8 @@ public class AuthenticationService {
 
     public void logout() {
         String email = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
+        refreshTokenService.deleteRefreshToken(email);
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 

@@ -10,6 +10,8 @@ import com.stationery_ecommerce.repository.CategoryRepository;
 import com.stationery_ecommerce.repository.ProductRepository;
 import com.stationery_ecommerce.util.HelperMethod;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -40,6 +42,7 @@ public class ProductService {
                 .map(this::mapToResponse);
     }
 
+    @Cacheable(value = "products", key = "#id")
     @Transactional(readOnly = true)
     public ProductResponse getProductById(Long id) {
         Product product = productRepository.findById(id)
@@ -82,6 +85,7 @@ public class ProductService {
         return mapToResponse(productRepository.save(product));
     }
 
+    @CacheEvict(value = "products", key = "#id")
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public ProductResponse updateProduct(Long id, ProductRequest request) {
@@ -108,6 +112,7 @@ public class ProductService {
         return mapToResponse(productRepository.save(product));
     }
 
+    @CacheEvict(value = "products", key = "#id")
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public void deleteProduct(Long id) {

@@ -7,6 +7,8 @@ import com.stationery_ecommerce.exception.payload.ResourceAlreadyExistsException
 import com.stationery_ecommerce.exception.payload.ResourceNotFoundException;
 import com.stationery_ecommerce.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +24,7 @@ public class CategoryService {
 
     private final CategoryRepository categoryRepository;
 
+    @Cacheable(value = "categories", key = "'all'")
     @Transactional(readOnly = true)
     public List<CategoryResponse> getAllCategories() {
         return categoryRepository.findAll().stream()
@@ -36,6 +39,7 @@ public class CategoryService {
         return mapToResponse(category);
     }
 
+    @CacheEvict(value = "categories", allEntries = true)
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public CategoryResponse createCategory(CategoryRequest request) {
@@ -60,6 +64,7 @@ public class CategoryService {
         return mapToResponse(categoryRepository.save(category));
     }
 
+    @CacheEvict(value = "categories", allEntries = true)
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public CategoryResponse updateCategory(Long id, CategoryRequest request) {

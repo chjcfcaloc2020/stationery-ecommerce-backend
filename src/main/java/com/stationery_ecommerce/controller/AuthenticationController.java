@@ -48,6 +48,11 @@ public class AuthenticationController {
                 .map(refreshTokenService::verifyExpiration)
                 .map(RefreshToken::getUser)
                 .map(user -> {
+                    boolean isValid = refreshTokenService.validateRefreshToken(user.getEmail(), requestRefreshToken);
+                    if (!isValid) {
+                        throw new TokenRefreshException(requestRefreshToken, "Refresh token is invalid or existed!");
+                    }
+
                     UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
                     String newAccessToken = jwtService.generateToken(userDetails);
 

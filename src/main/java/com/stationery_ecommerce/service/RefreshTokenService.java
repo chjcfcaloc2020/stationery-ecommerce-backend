@@ -7,9 +7,11 @@ import com.stationery_ecommerce.repository.RefreshTokenRepository;
 import com.stationery_ecommerce.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,6 +25,30 @@ public class RefreshTokenService {
 
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
+    private final StringRedisTemplate stringRedisTemplate;
+
+    private static final String REFRESH_TOKEN_PREFIX = "RT:";
+
+    /**
+     * Save Refresh Token into Redis with (TTL)
+     * Key: RT:{username}
+     * Value: refreshToken
+     */
+    public void saveRefreshToken(String username, String refreshToken, long expirationMs) {
+        String key = REFRESH_TOKEN_PREFIX + username;
+        stringRedisTemplate.opsForValue().set(key, refreshToken, Duration.ofMillis(expirationMs));
+    }
+
+    public boolean validateRefreshToken(String username, String refreshToken) {
+        String key = REFRESH_TOKEN_PREFIX + username;
+        String storedToken = stringRedisTemplate.opsForValue().get(key);
+        return storedToken != null && storedToken.equals(refreshToken);
+    }
+
+    public void deleteRefreshToken(String username) {
+        String key = REFRESH_TOKEN_PREFIX + username;
+        stringRedisTemplate.delete(key);
+    }
 
     public Optional<RefreshToken> findByToken(String token) {
         return refreshTokenRepository.findByToken(token);
