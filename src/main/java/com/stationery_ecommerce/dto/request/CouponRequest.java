@@ -24,7 +24,6 @@ public class CouponRequest {
     @DecimalMin(value = "0.0", inclusive = false, message = "Discount value must be greater than 0")
     private BigDecimal discountValue;
 
-    private BigDecimal maxDiscountAmount;
     private BigDecimal minOrder;
     private Integer maxUses;
 

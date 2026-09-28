@@ -32,6 +32,8 @@ public class ProductRequest {
     private String imageUrl;
     private List<String> images;
     private List<String> tags;
+    private List<String> colors;
+    private double rating;
     private boolean isNew;
     private boolean isBestSeller;
     private boolean isFeatured;

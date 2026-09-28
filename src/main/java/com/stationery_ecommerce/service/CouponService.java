@@ -33,7 +33,6 @@ public class CouponService {
                 .code(request.getCode().toUpperCase())
                 .discountType(request.getDiscountType())
                 .discountValue(request.getDiscountValue())
-//                .maxDiscountAmount(request.getMaxDiscountAmount())
                 .minOrder(request.getMinOrder())
                 .maxUses(request.getMaxUses())
                 .usedCount(0)
@@ -71,7 +70,6 @@ public class CouponService {
         coupon.setCode(request.getCode().toUpperCase());
         coupon.setDiscountType(request.getDiscountType());
         coupon.setDiscountValue(request.getDiscountValue());
-//        coupon.setMaxDiscountAmount(request.getMaxDiscountAmount());
         coupon.setMinOrder(request.getMinOrder());
         coupon.setMaxUses(request.getMaxUses());
         coupon.setStartDate(request.getStartDate());
@@ -100,7 +98,6 @@ public class CouponService {
                 .code(c.getCode())
                 .discountType(c.getDiscountType())
                 .discountValue(c.getDiscountValue())
-//                .maxDiscountAmount(v.getMaxDiscountAmount())
                 .minOrder(c.getMinOrder())
                 .maxUses(c.getMaxUses())
                 .usedCount(c.getUsedCount())

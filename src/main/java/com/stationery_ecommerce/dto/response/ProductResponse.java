@@ -18,6 +18,7 @@ public class ProductResponse {
     private BigDecimal originalPrice;
     private Integer stockQuantity;
     private Double rating;
+    private Integer reviewCount;
     private String imageUrl;
     private List<String> images;
     private List<String> tags;

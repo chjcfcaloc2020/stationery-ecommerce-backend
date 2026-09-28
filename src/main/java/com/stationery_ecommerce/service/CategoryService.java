@@ -50,6 +50,7 @@ public class CategoryService {
 
         Category category = Category.builder()
                 .name(request.getName())
+                .description(request.getDescription())
                 .slug(slug)
                 .icon(request.getIcon())
                 .color(request.getColor())
